@@ -3,14 +3,56 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Http\Redirect;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+use App\Applicant;
 
 class LoanController extends Controller
 {
-    public function getLoan(){
-        dd('It Works');
+    public function getEligibilityStatus(Request $request) {
+        $validator=Validator::make($request->all(),
+        [
+        'email' => 'required|email',
+        'salary' => 'required',
+        'amount' => 'required',
+        'tenure' => 'required',
+        ]);
+
+        if($validator ->fails()){
+            return('bad request');
+        }
+
+        $user_id = 5;
+
+        $salary=$request->input('salary');
+        $Amount=$request->input('amount');
+        $tenure=$request->input('tenure');
+        $email=$request->input('email');
+
+        $last_loanCollectedDate=DB::table('applications')
+        ->where('user_id','=',$user_id)
+        ->where('status', '=','PAID')
+        ->latest('application_id')
+        ->value('end_date');
+
+// TO CHECK IF THE USER CAN APPLY FOR A NEW LOAN, ONLY IF THE INITIAL WAS CONCLUDED.
+        $max_amount= $salary*$tenure*0.3;
+
+        if( Carbon::parse($last_loanCollectedDate)->addDays(90)->isPast()) {
+            //max_amount per month payable
+            return($Amount < $max_amount) ? $this->SuccessfulPage() : $this->Unsuccessful();
+        }
+        return('you have successfully applied');
     }
 
-    public function getloanStatus(){
-        dd('It Works');
+    public function SuccessfulPage(){
+        return view('successful');
     }
+
+    public function Unsuccessful(){
+        return view('unsucessful');
+    }
+
 }

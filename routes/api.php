@@ -17,6 +17,10 @@ use Illuminate\Http\Request;
 //    return $request->user();
 //});
 
+Route::post('/status-checker', 'LoanController@getEligibilityStatus');
+
+Route::get('/successfulPage', 'LoanController@SuccessPage');
+Route::get('/unsuccessful', 'LoanController@Unsuccessful');
 
 Route::group([
 
@@ -33,5 +37,6 @@ Route::group([
 
     Route::post('/loan', 'LoanController@getLoan');
     Route::post('/loan-status', 'LoanController@getloanStatus');
+
 
 });
